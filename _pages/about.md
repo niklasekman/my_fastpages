@@ -4,8 +4,5 @@ title: About Me
 permalink: /about/
 ---
 
-This website is powered by **[fastpages](https://github.com/fastai/fastpages)** [^1].
+I'm a Marine electrician with a software design background currently studying for Bachelor of Engineering in Electrical Engineering.
 
-
-
-[^1]:a blogging platform that natively supports Jupyter notebooks in addition to other formats.
