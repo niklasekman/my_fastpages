@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Engine knock detection AI part 1/5 | fastpages</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Engine knock detection AI part 1/5" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is the first notebook in a series where I’m following along with the fast.ai](https://www.fast.ai/) course [Practical Deep Learning for Coders by training an AI to identify knocking in 4-stroke car petrol engines" />
+<meta property="og:description" content="This is the first notebook in a series where I’m following along with the fast.ai](https://www.fast.ai/) course [Practical Deep Learning for Coders by training an AI to identify knocking in 4-stroke car petrol engines" />
+<link rel="canonical" href="https://niklasekman.github.io/my_fastpages/2019/09/13/youtube-dl_commented.html" />
+<meta property="og:url" content="https://niklasekman.github.io/my_fastpages/2019/09/13/youtube-dl_commented.html" />
+<meta property="og:site_name" content="fastpages" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-13T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://niklasekman.github.io/my_fastpages/2019/09/13/youtube-dl_commented.html","@type":"BlogPosting","headline":"Engine knock detection AI part 1/5","dateModified":"2019-09-13T00:00:00-05:00","datePublished":"2019-09-13T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://niklasekman.github.io/my_fastpages/2019/09/13/youtube-dl_commented.html"},"description":"This is the first notebook in a series where I’m following along with the fast.ai](https://www.fast.ai/) course [Practical Deep Learning for Coders by training an AI to identify knocking in 4-stroke car petrol engines","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/my_fastpages/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://niklasekman.github.io/my_fastpages/feed.xml" title="fastpages" /><link rel="shortcut icon" type="image/x-icon" href="/my_fastpages/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/my_fastpages/">fastpages</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/my_fastpages/about/">About Me</a><a class="page-link" href="/my_fastpages/search/">Search</a><a class="page-link" href="/my_fastpages/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Engine knock detection AI part 1/5</h1><p class="page-description">This is the first notebook in a series where I'm following along with the <a href='https://course.fast.ai/'>fast.ai](https://www.fast.ai/) course [Practical Deep Learning for Coders</a> by training an AI to identify knocking in 4-stroke car petrol engines</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2019-09-13T00:00:00-05:00" itemprop="datePublished">
+        Sep 13, 2019
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      13 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/niklasekman/my_fastpages/tree/master/_notebooks/2019-09-13-youtube-dl_commented.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/my_fastpages/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/niklasekman/my_fastpages/master?filepath=_notebooks%2F2019-09-13-youtube-dl_commented.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/my_fastpages/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/niklasekman/my_fastpages/blob/master/_notebooks/2019-09-13-youtube-dl_commented.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/my_fastpages/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2019-09-13-youtube-dl_commented.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Background">Background<a class="anchor-link" href="#Background"> </a></h1><p>The inspiration for this project comes from the presentation of fast.ai course alumni projects by Jeremy Howard in some of the first lessons where training an image classifier using spectrograms to identify sounds is mentioned.</p>
+<p>What this means in simpler terms is that an image classifying algorithm is presented with a series of pictures labeled with which class or case they represent. Each picture represents what that sound looks like if one were to plot the sound intensities at different frequencies as a function of time.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Method">Method<a class="anchor-link" href="#Method"> </a></h1><p>A set of recordings of both knocking and healthy sounding engines has first to be aquired in order to create a training set of spectrograms. I've chosen to create two playlists on youtube of videos specifically depicting car engines, one for each case. I made sure to just include petrol engines since my suspicion was that the sound of a diesel engine might throw things off.</p>
+<p>As a non car mechanic I made that assumption based on the idea that if I could distinguish a well running engine from a knocking one then the resulting model could do it too. I found I had some trouble making the distinction with some of the cold started diesels I listened to.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Downloading-audio-files">Downloading audio files<a class="anchor-link" href="#Downloading-audio-files"> </a></h2><p>After creating the playlists Google Drive is mounted to store the intermediary sound files.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Output" data-close="Show Output"></summary>
+        <p>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Go to this URL in a browser: https://accounts.google.com/o/oauth2/auth?client_id=947318989803-6bn6qk8qdgf4n4g3pfee6491hc0brc4i.apps.googleusercontent.com&amp;redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&amp;scope=email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs.test%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.photos.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fpeopleapi.readonly&amp;response_type=code
+
+Enter your authorization code:
+··········
+Mounted at /content/drive
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+</p>
+    </details>
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The youtube-dl python package is installed and the soundtrack from each of the videos is downloaded.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>pip install --upgrade youtube-dl
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Collecting youtube-dl
+  Downloading https://files.pythonhosted.org/packages/42/9c/9e13d8c2cb43dc158ede19e5dade9037fa5ee321e70494a3960d62f9242b/youtube_dl-2019.9.12.1-py2.py3-none-any.whl (1.8MB)
+     |████████████████████████████████| 1.8MB 2.8MB/s 
+Installing collected packages: youtube-dl
+Successfully installed youtube-dl-2019.9.12.1
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">youtube_dl</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ydl</span> <span class="o">=</span> <span class="n">youtube_dl</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">({</span><span class="s1">&#39;outtmpl&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%(id)s%(ext)s</span><span class="s1">&#39;</span><span class="p">})</span>
+
+<span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;bestaudio/best&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="s1">&#39;FFmpegExtractAudio&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;preferredcodec&#39;</span><span class="p">:</span> <span class="s1">&#39;mp3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;preferredquality&#39;</span><span class="p">:</span> <span class="s1">&#39;192&#39;</span><span class="p">,</span>
+    <span class="p">}],</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">youtube_dl</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span> <span class="k">as</span> <span class="n">ydl</span><span class="p">:</span>
+    <span class="n">ydl</span><span class="o">.</span><span class="n">download</span><span class="p">([</span><span class="s1">&#39;https://www.youtube.com/playlist?list=PL9R1Zswn-XPCh3A3bV9Vnf7ui9YCZWo9w&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Output" data-close="Show Output"></summary>
+        <p>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[youtube:playlist] PL9R1Zswn-XPCh3A3bV9Vnf7ui9YCZWo9w: Downloading webpage
+[download] Downloading playlist: engine_normal
+[youtube:playlist] playlist engine_normal: Downloading 15 videos
+[download] Downloading video 1 of 15
+[youtube] ho38ZYkQJxs: Downloading webpage
+[youtube] ho38ZYkQJxs: Downloading video info webpage
+[download] Destination: 2003 toyota corolla engine sound-ho38ZYkQJxs.webm
+[download] 100% of 2.44MiB in 00:00
+[ffmpeg] Destination: 2003 toyota corolla engine sound-ho38ZYkQJxs.mp3
+Deleting original file 2003 toyota corolla engine sound-ho38ZYkQJxs.webm (pass -k to keep)
+[download] Downloading video 2 of 15
+[youtube] Eky3PMh76gY: Downloading webpage
+[youtube] Eky3PMh76gY: Downloading video info webpage
+[youtube] Eky3PMh76gY: Downloading MPD manifest
+[dashsegments] Total fragments: 8
+[download] Destination: 2017 Hyundai Elantra SE 2.0L 4 Cylinder - Normal Engine Running Noises-Eky3PMh76gY.webm
+[download] 100% of 1.04MiB in 00:02
+[ffmpeg] Destination: 2017 Hyundai Elantra SE 2.0L 4 Cylinder - Normal Engine Running Noises-Eky3PMh76gY.mp3
+Deleting original file 2017 Hyundai Elantra SE 2.0L 4 Cylinder - Normal Engine Running Noises-Eky3PMh76gY.webm (pass -k to keep)
+[download] Downloading video 3 of 15
+[youtube] YiwsC_UlDFY: Downloading webpage
+[youtube] YiwsC_UlDFY: Downloading video info webpage
+[youtube] YiwsC_UlDFY: Downloading MPD manifest
+[dashsegments] Total fragments: 3
+[download] Destination: Nissan Frontier 4L v6 engine sound idle-YiwsC_UlDFY.webm
+[download] 100% of 195.58KiB in 00:01
+[ffmpeg] Destination: Nissan Frontier 4L v6 engine sound idle-YiwsC_UlDFY.mp3
+Deleting original file Nissan Frontier 4L v6 engine sound idle-YiwsC_UlDFY.webm (pass -k to keep)
+[download] Downloading video 4 of 15
+[youtube] uumxLAHbDsE: Downloading webpage
+[youtube] uumxLAHbDsE: Downloading video info webpage
+[download] Destination: Volvo S60 2.0T - Normal engine sound-uumxLAHbDsE.webm
+[download] 100% of 428.44KiB in 00:00
+[ffmpeg] Destination: Volvo S60 2.0T - Normal engine sound-uumxLAHbDsE.mp3
+Deleting original file Volvo S60 2.0T - Normal engine sound-uumxLAHbDsE.webm (pass -k to keep)
+[download] Downloading video 5 of 15
+[youtube] 8cXmy_U0_28: Downloading webpage
+[youtube] 8cXmy_U0_28: Downloading video info webpage
+[download] Destination: Mini R56S normal engine sound-8cXmy_U0_28.webm
+[download] 100% of 526.86KiB in 00:00
+[ffmpeg] Destination: Mini R56S normal engine sound-8cXmy_U0_28.mp3
+Deleting original file Mini R56S normal engine sound-8cXmy_U0_28.webm (pass -k to keep)
+[download] Downloading video 6 of 15
+[youtube] nGQcC7giMkU: Downloading webpage
+[youtube] nGQcC7giMkU: Downloading video info webpage
+[download] Destination: 2016 Kia Rio 1.6L V4 Engine - Normal Running Noises _ Sounds-nGQcC7giMkU.m4a
+[download] 100% of 1.05MiB in 00:00
+[ffmpeg] Correcting container in &#34;2016 Kia Rio 1.6L V4 Engine - Normal Running Noises _ Sounds-nGQcC7giMkU.m4a&#34;
+[ffmpeg] Destination: 2016 Kia Rio 1.6L V4 Engine - Normal Running Noises _ Sounds-nGQcC7giMkU.mp3
+Deleting original file 2016 Kia Rio 1.6L V4 Engine - Normal Running Noises _ Sounds-nGQcC7giMkU.m4a (pass -k to keep)
+[download] Downloading video 7 of 15
+[youtube] 2EQcfJAU7IM: Downloading webpage
+[youtube] 2EQcfJAU7IM: Downloading video info webpage
+[youtube] 2EQcfJAU7IM: Downloading MPD manifest
+[dashsegments] Total fragments: 8
+[download] Destination: 2017 Kia Rio 1.6L 4 Cylinder GDI Engine - Normal Engine Sounds-2EQcfJAU7IM.webm
+[download] 100% of 1.02MiB in 00:02
+[ffmpeg] Destination: 2017 Kia Rio 1.6L 4 Cylinder GDI Engine - Normal Engine Sounds-2EQcfJAU7IM.mp3
+Deleting original file 2017 Kia Rio 1.6L 4 Cylinder GDI Engine - Normal Engine Sounds-2EQcfJAU7IM.webm (pass -k to keep)
+[download] Downloading video 8 of 15
+[youtube] PRO0HgD9qx4: Downloading webpage
+[youtube] PRO0HgD9qx4: Downloading video info webpage
+[youtube] PRO0HgD9qx4: Downloading MPD manifest
+[dashsegments] Total fragments: 14
+[download] Destination: 2017 Nissan Versa Note - Normal Engine Running Noises - 1.6L Engine-PRO0HgD9qx4.m4a
+[download] 100% of 949.79KiB in 00:01
+[ffmpeg] Correcting container in &#34;2017 Nissan Versa Note - Normal Engine Running Noises - 1.6L Engine-PRO0HgD9qx4.m4a&#34;
+[ffmpeg] Destination: 2017 Nissan Versa Note - Normal Engine Running Noises - 1.6L Engine-PRO0HgD9qx4.mp3
+Deleting original file 2017 Nissan Versa Note - Normal Engine Running Noises - 1.6L Engine-PRO0HgD9qx4.m4a (pass -k to keep)
+[download] Downloading video 9 of 15
+[youtube] 6GPgodkLSkQ: Downloading webpage
+[youtube] 6GPgodkLSkQ: Downloading video info webpage
+[download] Destination: Listen Toyota 2.4 VVT-i engine sound, when engine is very OK. Years 2002 to 2015-6GPgodkLSkQ.webm
+[download] 100% of 1.93MiB in 00:00
+[ffmpeg] Destination: Listen Toyota 2.4 VVT-i engine sound, when engine is very OK. Years 2002 to 2015-6GPgodkLSkQ.mp3
+Deleting original file Listen Toyota 2.4 VVT-i engine sound, when engine is very OK. Years 2002 to 2015-6GPgodkLSkQ.webm (pass -k to keep)
+[download] Downloading video 10 of 15
+[youtube] pLmX2ws7znE: Downloading webpage
+[youtube] pLmX2ws7znE: Downloading video info webpage
+[youtube] pLmX2ws7znE: Downloading MPD manifest
+[dashsegments] Total fragments: 4
+[download] Destination: 2018 Hyundai Tucson 2.0 GDI Nu Engine Sound Normal-pLmX2ws7znE.m4a
+[download] 100% of 451.64KiB in 00:00
+[ffmpeg] Correcting container in &#34;2018 Hyundai Tucson 2.0 GDI Nu Engine Sound Normal-pLmX2ws7znE.m4a&#34;
+[ffmpeg] Destination: 2018 Hyundai Tucson 2.0 GDI Nu Engine Sound Normal-pLmX2ws7znE.mp3
+Deleting original file 2018 Hyundai Tucson 2.0 GDI Nu Engine Sound Normal-pLmX2ws7znE.m4a (pass -k to keep)
+[download] Downloading video 11 of 15
+[youtube] mOFcfwLTNkY: Downloading webpage
+[youtube] mOFcfwLTNkY: Downloading video info webpage
+[download] Destination: 3.2 fsi engine sound cold (normal or not)-mOFcfwLTNkY.m4a
+[download] 100% of 928.43KiB in 00:00
+[ffmpeg] Correcting container in &#34;3.2 fsi engine sound cold (normal or not)-mOFcfwLTNkY.m4a&#34;
+[ffmpeg] Destination: 3.2 fsi engine sound cold (normal or not)-mOFcfwLTNkY.mp3
+Deleting original file 3.2 fsi engine sound cold (normal or not)-mOFcfwLTNkY.m4a (pass -k to keep)
+[download] Downloading video 12 of 15
+[youtube] 5q1uATQu8zg: Downloading webpage
+[youtube] 5q1uATQu8zg: Downloading video info webpage
+[youtube] 5q1uATQu8zg: Downloading MPD manifest
+[dashsegments] Total fragments: 13
+[download] Destination: Normal Engine Idle Sound Cold &amp; Warm - 2006 Nissan Sentra-5q1uATQu8zg.webm
+[download] 100% of 1.86MiB in 00:07
+[ffmpeg] Destination: Normal Engine Idle Sound Cold &amp; Warm - 2006 Nissan Sentra-5q1uATQu8zg.mp3
+Deleting original file Normal Engine Idle Sound Cold &amp; Warm - 2006 Nissan Sentra-5q1uATQu8zg.webm (pass -k to keep)
+[download] Downloading video 13 of 15
+[youtube] 8BOtWY3RobA: Downloading webpage
+[youtube] 8BOtWY3RobA: Downloading video info webpage
+[download] Destination: 1996 Subaru Outback, Normal Engine Sound-8BOtWY3RobA.webm
+[download] 100% of 956.87KiB in 00:00
+[ffmpeg] Destination: 1996 Subaru Outback, Normal Engine Sound-8BOtWY3RobA.mp3
+Deleting original file 1996 Subaru Outback, Normal Engine Sound-8BOtWY3RobA.webm (pass -k to keep)
+[download] Downloading video 14 of 15
+[youtube] bkPtY1pW82Y: Downloading webpage
+[youtube] bkPtY1pW82Y: Downloading video info webpage
+[youtube] bkPtY1pW82Y: Downloading MPD manifest
+[dashsegments] Total fragments: 15
+[download] Destination: Bmw f30 Noisy Engine Sound-bkPtY1pW82Y.m4a
+[download] 100% of 1.01MiB in 00:01
+[ffmpeg] Correcting container in &#34;Bmw f30 Noisy Engine Sound-bkPtY1pW82Y.m4a&#34;
+[ffmpeg] Destination: Bmw f30 Noisy Engine Sound-bkPtY1pW82Y.mp3
+Deleting original file Bmw f30 Noisy Engine Sound-bkPtY1pW82Y.m4a (pass -k to keep)
+[download] Downloading video 15 of 15
+[youtube] nSB65kClSXM: Downloading webpage
+[youtube] nSB65kClSXM: Downloading video info webpage
+[youtube] nSB65kClSXM: Downloading MPD manifest
+[dashsegments] Total fragments: 4
+[download] Destination: 2016-2018 Toyota Tacoma Loud Engine sound is Normal-nSB65kClSXM.webm
+[download] 100% of 382.73KiB in 00:01
+[ffmpeg] Destination: 2016-2018 Toyota Tacoma Loud Engine sound is Normal-nSB65kClSXM.mp3
+Deleting original file 2016-2018 Toyota Tacoma Loud Engine sound is Normal-nSB65kClSXM.webm (pass -k to keep)
+[download] Finished downloading playlist: engine_normal
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+</p>
+    </details>
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>rm -rf ./sample_data
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Checking to see that all the expected files are present.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>ls *.mp3
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&#39;1996 Subaru Outback, Normal Engine Sound-8BOtWY3RobA.mp3&#39;
+&#39;2003 toyota corolla engine sound-ho38ZYkQJxs.mp3&#39;
+&#39;2016-2018 Toyota Tacoma Loud Engine sound is Normal-nSB65kClSXM.mp3&#39;
+&#39;2016 Kia Rio 1.6L V4 Engine - Normal Running Noises _ Sounds-nGQcC7giMkU.mp3&#39;
+&#39;2017 Hyundai Elantra SE 2.0L 4 Cylinder - Normal Engine Running Noises-Eky3PMh76gY.mp3&#39;
+&#39;2017 Kia Rio 1.6L 4 Cylinder GDI Engine - Normal Engine Sounds-2EQcfJAU7IM.mp3&#39;
+&#39;2017 Nissan Versa Note - Normal Engine Running Noises - 1.6L Engine-PRO0HgD9qx4.mp3&#39;
+&#39;2018 Hyundai Tucson 2.0 GDI Nu Engine Sound Normal-pLmX2ws7znE.mp3&#39;
+&#39;3.2 fsi engine sound cold (normal or not)-mOFcfwLTNkY.mp3&#39;
+&#39;Bmw f30 Noisy Engine Sound-bkPtY1pW82Y.mp3&#39;
+&#39;Listen Toyota 2.4 VVT-i engine sound, when engine is very OK. Years 2002 to 2015-6GPgodkLSkQ.mp3&#39;
+&#39;Mini R56S normal engine sound-8cXmy_U0_28.mp3&#39;
+&#39;Nissan Frontier 4L v6 engine sound idle-YiwsC_UlDFY.mp3&#39;
+&#39;Normal Engine Idle Sound Cold &amp; Warm - 2006 Nissan Sentra-5q1uATQu8zg.mp3&#39;
+&#39;Volvo S60 2.0T - Normal engine sound-uumxLAHbDsE.mp3&#39;
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Moving the sound files from the Colab instance to a folder on Google Drive.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>mv *.mp3 /content/drive/My<span class="se">\ </span>Drive/Colab<span class="se">\ </span>Notebooks/fast.ai/KnockKnock/data/normal/
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Rinse and repeat for the other playlist.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p><div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse-output</span>
+<span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;bestaudio/best&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="s1">&#39;FFmpegExtractAudio&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;preferredcodec&#39;</span><span class="p">:</span> <span class="s1">&#39;mp3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;preferredquality&#39;</span><span class="p">:</span> <span class="s1">&#39;192&#39;</span><span class="p">,</span>
+    <span class="p">}],</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">youtube_dl</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span> <span class="k">as</span> <span class="n">ydl</span><span class="p">:</span>
+    <span class="n">ydl</span><span class="o">.</span><span class="n">download</span><span class="p">([</span><span class="s1">&#39;https://www.youtube.com/playlist?list=PL9R1Zswn-XPCnpyXQLRPYVJr4BXJUYie8&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+</p>
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[youtube:playlist] PL9R1Zswn-XPCnpyXQLRPYVJr4BXJUYie8: Downloading webpage
+[download] Downloading playlist: engine_knocking
+[youtube:playlist] playlist engine_knocking: Downloading 15 videos
+[download] Downloading video 1 of 15
+[youtube] JIOdS7XbHys: Downloading webpage
+[youtube] JIOdS7XbHys: Downloading video info webpage
+[download] Destination: How To Diagnose An Engine Knock.MP4-JIOdS7XbHys.webm
+[download] 100% of 3.87MiB in 00:00
+[ffmpeg] Destination: How To Diagnose An Engine Knock.MP4-JIOdS7XbHys.mp3
+Deleting original file How To Diagnose An Engine Knock.MP4-JIOdS7XbHys.webm (pass -k to keep)
+[download] Downloading video 2 of 15
+[youtube] gBA1zC5duuI: Downloading webpage
+[youtube] gBA1zC5duuI: Downloading video info webpage
+[download] Destination: Engine Noise Diagnosis-Part 1-gBA1zC5duuI.webm
+[download] 100% of 17.50MiB in 00:00
+[ffmpeg] Destination: Engine Noise Diagnosis-Part 1-gBA1zC5duuI.mp3
+Deleting original file Engine Noise Diagnosis-Part 1-gBA1zC5duuI.webm (pass -k to keep)
+[download] Downloading video 3 of 15
+[youtube] TjtNcBD4Uwk: Downloading webpage
+[youtube] TjtNcBD4Uwk: Downloading video info webpage
+[download] Destination: Engine Noise Diagnosis Part 2- The Answer Revealed!-TjtNcBD4Uwk.webm
+[download] 100% of 8.50MiB in 00:00
+[ffmpeg] Destination: Engine Noise Diagnosis Part 2- The Answer Revealed!-TjtNcBD4Uwk.mp3
+Deleting original file Engine Noise Diagnosis Part 2- The Answer Revealed!-TjtNcBD4Uwk.webm (pass -k to keep)
+[download] Downloading video 4 of 15
+[youtube] wf8e_Ivi72Q: Downloading webpage
+[youtube] wf8e_Ivi72Q: Downloading video info webpage
+[download] Destination: Engine Knock Diagnosis-wf8e_Ivi72Q.webm
+[download] 100% of 2.43MiB in 00:00
+[ffmpeg] Destination: Engine Knock Diagnosis-wf8e_Ivi72Q.mp3
+Deleting original file Engine Knock Diagnosis-wf8e_Ivi72Q.webm (pass -k to keep)
+[download] Downloading video 5 of 15
+[youtube] kBWXxWD7g30: Downloading webpage
+[youtube] kBWXxWD7g30: Downloading video info webpage
+[download] Destination: Engine knocking sounds-kBWXxWD7g30.webm
+[download] 100% of 571.70KiB in 00:00
+[ffmpeg] Destination: Engine knocking sounds-kBWXxWD7g30.mp3
+Deleting original file Engine knocking sounds-kBWXxWD7g30.webm (pass -k to keep)
+[download] Downloading video 6 of 15
+[youtube] IRcZo89RJzI: Downloading webpage
+[youtube] IRcZo89RJzI: Downloading video info webpage
+[youtube] IRcZo89RJzI: Downloading MPD manifest
+[dashsegments] Total fragments: 39
+[download] Destination: Ticking or Knocking Engine-IRcZo89RJzI.m4a
+[download] 100% of 2.83MiB in 00:03
+[ffmpeg] Correcting container in &#34;Ticking or Knocking Engine-IRcZo89RJzI.m4a&#34;
+[ffmpeg] Destination: Ticking or Knocking Engine-IRcZo89RJzI.mp3
+Deleting original file Ticking or Knocking Engine-IRcZo89RJzI.m4a (pass -k to keep)
+[download] Downloading video 7 of 15
+[youtube] Zh8e9MGam8Q: Downloading webpage
+[youtube] Zh8e9MGam8Q: Downloading video info webpage
+[download] Destination: Engine Knocking-Zh8e9MGam8Q.m4a
+[download] 100% of 1.01MiB in 00:00
+[ffmpeg] Correcting container in &#34;Engine Knocking-Zh8e9MGam8Q.m4a&#34;
+[ffmpeg] Destination: Engine Knocking-Zh8e9MGam8Q.mp3
+Deleting original file Engine Knocking-Zh8e9MGam8Q.m4a (pass -k to keep)
+[download] Downloading video 8 of 15
+[youtube] lGC51mIQylk: Downloading webpage
+[youtube] lGC51mIQylk: Downloading video info webpage
+[download] Destination: What Does Detonation _ Spark Knock Sound Like-lGC51mIQylk.m4a
+[download] 100% of 2.04MiB in 00:00
+[ffmpeg] Correcting container in &#34;What Does Detonation _ Spark Knock Sound Like-lGC51mIQylk.m4a&#34;
+[ffmpeg] Destination: What Does Detonation _ Spark Knock Sound Like-lGC51mIQylk.mp3
+Deleting original file What Does Detonation _ Spark Knock Sound Like-lGC51mIQylk.m4a (pass -k to keep)
+[download] Downloading video 9 of 15
+[youtube] rk_iOIumShQ: Downloading webpage
+[youtube] rk_iOIumShQ: Downloading video info webpage
+[download] Destination: Engine knocking sound-rk_iOIumShQ.m4a
+[download] 100% of 763.43KiB in 00:00
+[ffmpeg] Correcting container in &#34;Engine knocking sound-rk_iOIumShQ.m4a&#34;
+[ffmpeg] Destination: Engine knocking sound-rk_iOIumShQ.mp3
+Deleting original file Engine knocking sound-rk_iOIumShQ.m4a (pass -k to keep)
+[download] Downloading video 10 of 15
+[youtube] n0jys2TEXDk: Downloading webpage
+[youtube] n0jys2TEXDk: Downloading video info webpage
+[download] Destination: Ford Vehicle Noises - #4 Tapping Knocking Noise 2.5L Engines-n0jys2TEXDk.webm
+[download] 100% of 3.72MiB in 00:00
+[ffmpeg] Destination: Ford Vehicle Noises - #4 Tapping Knocking Noise 2.5L Engines-n0jys2TEXDk.mp3
+Deleting original file Ford Vehicle Noises - #4 Tapping Knocking Noise 2.5L Engines-n0jys2TEXDk.webm (pass -k to keep)
+[download] Downloading video 11 of 15
+[youtube] e79c_-_hVa8: Downloading webpage
+[youtube] e79c_-_hVa8: Downloading video info webpage
+[youtube] e79c_-_hVa8: Downloading MPD manifest
+[dashsegments] Total fragments: 7
+[download] Destination: Spun _ Knocking Rod Bearing Noise-e79c_-_hVa8.webm
+[download] 100% of 1.02MiB in 00:00
+[ffmpeg] Destination: Spun _ Knocking Rod Bearing Noise-e79c_-_hVa8.mp3
+Deleting original file Spun _ Knocking Rod Bearing Noise-e79c_-_hVa8.webm (pass -k to keep)
+[download] Downloading video 12 of 15
+[youtube] rFuLwzb_VmE: Downloading webpage
+[youtube] rFuLwzb_VmE: Downloading video info webpage
+[download] Destination: Spark Knock or engine ping-rFuLwzb_VmE.m4a
+[download] 100% of 365.87KiB in 00:00
+[ffmpeg] Correcting container in &#34;Spark Knock or engine ping-rFuLwzb_VmE.m4a&#34;
+[ffmpeg] Destination: Spark Knock or engine ping-rFuLwzb_VmE.mp3
+Deleting original file Spark Knock or engine ping-rFuLwzb_VmE.m4a (pass -k to keep)
+[download] Downloading video 13 of 15
+[youtube] wmtBqNnnvrs: Downloading webpage
+[youtube] wmtBqNnnvrs: Downloading video info webpage
+[youtube] wmtBqNnnvrs: Downloading MPD manifest
+[dashsegments] Total fragments: 20
+[download] Destination: Ever Wonder What Rod Knock Sounds Like-wmtBqNnnvrs.webm
+[download] 100% of 3.18MiB in 00:05
+[ffmpeg] Destination: Ever Wonder What Rod Knock Sounds Like-wmtBqNnnvrs.mp3
+Deleting original file Ever Wonder What Rod Knock Sounds Like-wmtBqNnnvrs.webm (pass -k to keep)
+[download] Downloading video 14 of 15
+[youtube] 8EZEwMqJj1U: Downloading webpage
+[youtube] 8EZEwMqJj1U: Downloading video info webpage
+[download] Destination: Engine knocking_Pinging sound at idle...-8EZEwMqJj1U.webm
+[download] 100% of 1.35MiB in 00:00
+[ffmpeg] Destination: Engine knocking_Pinging sound at idle...-8EZEwMqJj1U.mp3
+Deleting original file Engine knocking_Pinging sound at idle...-8EZEwMqJj1U.webm (pass -k to keep)
+[download] Downloading video 15 of 15
+[youtube] uRtyPbyomxQ: Downloading webpage
+[youtube] uRtyPbyomxQ: Downloading video info webpage
+[download] Destination: HYUNDAI ELANTRA ENGINE KNOCK TICKING NOISE-uRtyPbyomxQ.webm
+[download] 100% of 5.25MiB in 00:00
+[ffmpeg] Destination: HYUNDAI ELANTRA ENGINE KNOCK TICKING NOISE-uRtyPbyomxQ.mp3
+Deleting original file HYUNDAI ELANTRA ENGINE KNOCK TICKING NOISE-uRtyPbyomxQ.webm (pass -k to keep)
+[download] Finished downloading playlist: engine_knocking
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>mv *.mp3 /content/drive/My<span class="se">\ </span>Drive/Colab<span class="se">\ </span>Notebooks/fast.ai/KnockKnock/data/knocking/
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Slicing-audio-files">Slicing audio files<a class="anchor-link" href="#Slicing-audio-files"> </a></h2><p>The 15 mp3 files were then sliced into 10 second clips in <a href="https://www.audacityteam.org/">Audacity</a>. This could probably have been done programmatically but as trivial as the task initally may sound there would most likely have been complications. The videos do not only show the car running with the hood popped up. There's some talking, explaining and fumbling around in quite a few of them.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><a class="u-url" href="/my_fastpages/2019/09/13/youtube-dl_commented.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/my_fastpages/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/my_fastpages/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/my_fastpages/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/fastai" title="fastai"><svg class="svg-icon grey"><use xlink:href="/my_fastpages/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/fastdotai" title="fastdotai"><svg class="svg-icon grey"><use xlink:href="/my_fastpages/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
