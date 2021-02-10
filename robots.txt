@@ -1,1 +1,1 @@
-Sitemap: https://niklasekman.github.io/my_fastpages/sitemap.xml
+Sitemap: https://niklasekman.com/sitemap.xml
