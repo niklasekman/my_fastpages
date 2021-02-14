@@ -2264,7 +2264,7 @@ if __name__ == '__main__':
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The previous is what is needed to run the bot locally. For running continuously on a server one should use webhooks instead of polling. Referring to the line <code>updater.start_polling()</code> line near the end of the <code>main.py</code> file. Deploying on Heroku, as I've done, requires the project to be put under version contol with Git.</p>
-<p>There are some more traps for young players which I've tried to summarize in the list under the next heading in bullet form. There are a lot of guides that can be found by googling <code>fastai telegram bot</code> but they mostly just take an image the user sends and feed it to the fastai <code>predict</code> function. Things can get a bit hairy if something more has to be done to process the data from the user.</p>
+<p>There are some more traps for young players which I've tried to summarize in a bullet list form. There are a lot of guides that can be found by googling <code>fastai telegram bot</code> but they mostly just take an image the user sends and feed it to the fastai <code>predict</code> function. Things can get a bit hairy if something more has to be done to process the data from the user.</p>
 
 </div>
 </div>
@@ -2318,6 +2318,8 @@ SoundFile==0.10.3.post1</code></pre>
 <li>Use the <code>cpu</code> versions of the <code>torch</code> and <code>torchvision</code> so that the <em>slug</em> of your Heroku projects doesn't get too big (max is 500 MB)</li>
 <li>The <code>librosa</code>, <code>moviepy</code> and <code>SoundFile</code> are specific to this project and are used to prepare videos.</li>
 <li>There were some problems with installing the <code>librosa</code> module which were due to the fact that the Ubuntu based environment on Heroku does not have the <code>libsndfile1</code> and <code>libsndfile-dev</code> installed by default. They can be installed during the build by putting their names in a file called <code>Aptfile</code> and adding the community apt buildpack <code>heroku-community/apt</code> to the project under the <strong>Settings</strong> tab. See also the <a href="https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-apt">heroku-buildpack-apt</a> documentation.</li>
+<li>There's some great advice from Artem Rys in this medium post where he shows how to avoid having the API token from being committed to VCS by using enviromnent variables. Something that's often overlooked in web development tutorials. <a href="https://medium.com/python4you/creating-telegram-bot-and-deploying-it-on-heroku-471de1d96554">Creating Telegram Bot and Deploying it to Heroku</a>
+</li>
 </ul>
 
 </div>
